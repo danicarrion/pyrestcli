@@ -1,0 +1,39 @@
+[{
+    "model": "polls.question",
+    "pk": 1,
+    "fields": {
+        "question_text": "OLA K ASE",
+        "pub_date": "2016-08-24T00:00:00Z"
+    }
+}, {
+    "model": "polls.question",
+    "pk": 2,
+    "fields": {
+        "question_text": "OLA K ASEMO",
+        "pub_date": "2016-08-21T00:00:00Z"
+    }
+}, {
+    "model": "polls.choice",
+    "pk": 1,
+    "fields": {
+        "question": 1,
+        "choice_text": "nada",
+        "votes": 2
+    }
+}, {
+    "model": "polls.choice",
+    "pk": 2,
+    "fields": {
+        "question": 1,
+        "choice_text": "argo",
+        "votes": 3
+    }
+}, {
+    "model": "polls.choice",
+    "pk": 3,
+    "fields": {
+        "question": 2,
+        "choice_text": "pufff",
+        "votes": 1
+    }
+}]
