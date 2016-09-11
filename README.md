@@ -193,13 +193,14 @@ First, clone the repo:
 $ git clone git@github.com:danicarrion/pyrestcli.git
 ```
 
-Cd into the folder, create and enable the virtualenv and install _pyrestcli_:
+Cd into the folder, create and enable the virtualenv, install _pyrestcli_ and [pytest](http://doc.pytest.org/en/latest/):
 
 ```
 $ cd pyrestcli
 $ virtualenv env
 $ source env/bin/activate
 $ pip install -e .
+$ pip install pytest
 ```
 
 The test suite is run against a [Django](https://www.djangoproject.com/) server that uses [Django Rest Framework](http://www.django-rest-framework.org/) to serve some test models over a REST API. In order to install these, you need to:
