@@ -6,10 +6,15 @@ class QuestionField(ResourceField):
     value_class = "models.Question"
 
 
+class ChoiceField(ResourceField):
+    value_class = "models.Choice"
+
+
 class Question(Resource):
     id = IntegerField()
     question_text = CharField()
     pub_date = DateTimeField()
+    choices = ChoiceField(many=True)
 
     class Meta:
         name_field = "question_text"
@@ -26,10 +31,10 @@ class Choice(Resource):
 
 
 class QuestionManager(Manager):
-    model_class = Question
+    resource_class = Question
     json_collection_attribute = "results"
 
 
 class ChoiceManager(Manager):
-    model_class = Choice
+    resource_class = Choice
     json_collection_attribute = "results"

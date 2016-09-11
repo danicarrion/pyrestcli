@@ -9,5 +9,7 @@ class ChoiceSerializer(serializers.ModelSerializer):
 
 
 class QuestionSerializer(serializers.ModelSerializer):
+    choices = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
     class Meta:
         model = Question

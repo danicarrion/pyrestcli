@@ -7,13 +7,21 @@ from .paginators import DummyPaginator
 
 
 class APIConnected:
-    parse_json = True
-
+    """
+    This class handle API endpoints and interfaces with the authorization client for actually sending requests
+    """
     class Meta:
-        collection_endpoint = None  # /-terminated
+        """
+        This class hosts all the configuration parameters of the main class
+        :param collection_endpoint: Relative path to the collection, /-terminated
+        :param parse_json: Must be True is response data comes as a json string on the body of the response, False otherwise
+        """
+        collection_endpoint = None
+        parse_json = True
 
     def __init__(self, auth_client):
         """
+        Initializes the instance
         :param auth_client: Client to make (non)authorized requests
         :return:
         """
@@ -21,10 +29,23 @@ class APIConnected:
 
     @classmethod
     def get_resource_endpoint(cls, resource_id):
+        """
+        Get the relative path to a specific API resource
+        :param cls: Resource class
+        :param resource_id: Resource id
+        :return: Relative path to the resource
+        """
         return urljoin(cls.get_collection_endpoint(), str(resource_id)) if resource_id is not None else None
 
     @classmethod
     def get_collection_endpoint(cls):
+        """
+        Get the relative path to the API resource collection
+
+        If self.collection_endpoint is not set, it will default to the lowercase name of the resource class plus an "s" and the terminating "/"
+        :param cls: Resource class
+        :return: Relative path to the resource collection
+        """
         return cls.Meta.collection_endpoint if cls.Meta.collection_endpoint is not None else cls.__name__.lower() + "s/"
 
     def send(self, url, http_method, **client_args):
@@ -39,7 +60,18 @@ class APIConnected:
 
 
 class ResourceMetaclass(type):
+    """
+    Handle all the work that needs to be done on class initialization to deal with fields
+    """
     def __init__(cls, name, bases, nmspc):
+        """
+        Manage Meta inheritance and create the self.fields list of field attributes
+        :param cls: Class object
+        :param name: Class name
+        :param bases: Class inheritance
+        :param nmspc: Class namespace
+        :return:
+        """
         super(ResourceMetaclass, cls).__init__(name, bases, nmspc)
 
         for klass in bases:
@@ -57,32 +89,48 @@ class ResourceMetaclass(type):
 
 class Resource(APIConnected, metaclass=ResourceMetaclass):
     """
-    Resource
+    Resource on the REST API
+
+    API attributes are expected to be defined as attributes on the class by using fields. Configuration parameters go in the Meta class
     """
-    class Meta():
+    class Meta:
+        """
+        This class hosts all the configuration parameters of the main class
+        :param id_field: Name of the field that acts as the unique API identifier for the resouce
+        :param name_field: Name of the field whose value can be used as a friendly representation of the resource
+        :param json_data: Whether the API expects data to be sent as json or not
+        """
         id_field = "id"
         name_field = "id"
         json_data = True
 
     def __str__(self):
-        return getattr(self, self.Meta.name_field, super(Resource, self).__str__())
+        """
+        Give a nice representation for the resource
+        :param return: Resource friendly representation based on the self.Meta.name_field attribute
+        """
+        return getattr(self, self.Meta.name_field, super(Resource, self).__str__()).encode("utf-8")
 
     def get_resource_endpoint(self):
+        """
+        Get the relative path to the specific API resource
+        :return: Relative path to the resource
+        """
         return super(Resource, self).get_resource_endpoint(getattr(self, self.Meta.id_field))
 
     def update_from_dict(self, attribute_dict):
         """
-        :param data_dict: Dictionary to be mapped into object attributes
+        Update the fields of the resource out of a data dictionary taken out of an API response
+        :param attribute_dict: Dictionary to be mapped into object attributes
         :return:
         """
-        # TODO: field support
         for field_name, field_value in attribute_dict.items():
             if self.fields is None or field_name in self.fields:
                 setattr(self, field_name, field_value)
 
     def send(self, url, http_method, **client_args):
         """
-        Make the actual request to the API
+        Make the actual request to the API, updating the resource if necessary
         :param url: Endpoint URL
         :param http_method: The method used to make the request to the API
         :param client_args: Arguments to be sent to the auth client
@@ -93,7 +141,7 @@ class Resource(APIConnected, metaclass=ResourceMetaclass):
         # Update Python object if we get back a full object from the API
         if response.status_code in (requests.codes.ok, requests.codes.created):
             try:
-                self.update_from_dict(self.client.get_response_data(response, self.parse_json))
+                self.update_from_dict(self.client.get_response_data(response, self.Meta.parse_json))
             except ValueError:
                 pass
 
@@ -105,9 +153,20 @@ class Resource(APIConnected, metaclass=ResourceMetaclass):
         values = {}
         for field_name in self.fields:
             value = getattr(self, field_name)
+
+            # When creating or updating, only references to other resources are sent, instead of the whole resource
+            if isinstance(value, Resource):
+                value = getattr(value, value.Meta.id_field)
+
+            # Lists of resources are not sent when creating or updating a resource
+            if isinstance(value, list):
+                if len(value) > 0 and isinstance(value[0], Resource):
+                    value = None
+
             if isinstance(value, datetime):
                 # TODO: Allow for different formats
                 value = value.isoformat()
+
             if value is not None:
                 values[field_name] = value
 
@@ -123,6 +182,7 @@ class Resource(APIConnected, metaclass=ResourceMetaclass):
     def refresh(self):
         """
         Refreshes a resource by checking against the API
+        :return:
         """
         if self.get_resource_endpoint() is not None:
             self.send(self.get_resource_endpoint(), "get")
@@ -137,7 +197,13 @@ class Resource(APIConnected, metaclass=ResourceMetaclass):
 
 
 class Manager(APIConnected):
-    model_class = None
+    """
+    Manager class for resources
+    :param resource_class: Resource class
+    :param json_collection_attribute: Which attribute of the response json hosts the list of resources when retrieving the resource collection
+    :param paginator_class: Which paginator class to use when retrieving the resource collection
+    """
+    resource_class = None
     json_collection_attribute = "data"
     paginator_class = DummyPaginator
 
@@ -151,7 +217,13 @@ class Manager(APIConnected):
 
     @classmethod
     def get_collection_endpoint(cls):
-        return cls.model_class.get_collection_endpoint()
+        """
+        Get the relative path to the API resource collection, using the corresponding resource class
+
+        :param cls: Manager class
+        :return: Relative path to the resource collection
+        """
+        return cls.resource_class.get_collection_endpoint()
 
     def get(self, resource_id):
         """
@@ -162,11 +234,11 @@ class Manager(APIConnected):
         response = self.send(self.get_resource_endpoint(resource_id), "get")
 
         try:
-            resource = self.model_class(self.client)
+            resource = self.resource_class(self.client)
         except (ValueError, TypeError):
             return None
         else:
-            resource.update_from_dict(self.client.get_response_data(response, self.parse_json))
+            resource.update_from_dict(self.client.get_response_data(response, self.Meta.parse_json))
             return resource
 
     def filter(self, **search_args):
@@ -179,13 +251,13 @@ class Manager(APIConnected):
 
         for url in self.paginator.get_urls(self.get_collection_endpoint()):
             response = self.paginator.process_response(self.send(url, "get", params=search_args))
-            raw_resources += self.client.get_response_data(response, self.parse_json)[self.json_collection_attribute] if self.json_collection_attribute is not None else self.client.get_response_data(response, self.parse_json)
+            raw_resources += self.client.get_response_data(response, self.Meta.parse_json)[self.json_collection_attribute] if self.json_collection_attribute is not None else self.client.get_response_data(response, self.Meta.parse_json)
 
         resources = []
 
         for raw_resource in raw_resources:
             try:
-                resource = self.model_class(self.client)
+                resource = self.resource_class(self.client)
             except (ValueError, TypeError):
                 continue
             else:
@@ -202,7 +274,11 @@ class Manager(APIConnected):
         return self.filter()
 
     def create(self, **kwargs):
-        resource = self.model_class(self.client)
+        """
+        Create a resource on the server
+        :params kwargs: Attributes (field names and values) of the new resource
+        """
+        resource = self.resource_class(self.client)
         resource.update_from_dict(kwargs)
         resource.save()
 
