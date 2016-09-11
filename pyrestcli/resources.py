@@ -212,7 +212,7 @@ class Manager(APIConnected):
         :param auth_client: Client to make (non)authorized requests
         :return:
         """
-        self.paginator = self.paginator_class()
+        self.paginator = self.paginator_class(auth_client.base_url)
         super(Manager, self).__init__(auth_client)
 
     @classmethod

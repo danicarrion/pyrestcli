@@ -1,4 +1,7 @@
 class Paginator:
+    def __init__(self, base_url):
+        self.base_url = base_url
+
     def get_urls(self, initial_url):
         raise NotImplemented
 
@@ -24,6 +27,10 @@ class NextWithUrlPaginator(Paginator):
             yield self.url
 
     def process_response(self, response):
-        self.url = response["next"] if "next" in response else None
+        response_json = response.json()
+        try:
+            self.url = response_json["next"].replace(self.base_url, "")
+        except AttributeError:
+            self.url = None
 
         return response

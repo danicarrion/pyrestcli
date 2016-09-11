@@ -1,5 +1,6 @@
 from pyrestcli.fields import CharField, IntegerField, DateTimeField, ResourceField
 from pyrestcli.resources import Resource, Manager
+from pyrestcli.paginators import NextWithUrlPaginator
 
 
 class QuestionField(ResourceField):
@@ -33,8 +34,10 @@ class Choice(Resource):
 class QuestionManager(Manager):
     resource_class = Question
     json_collection_attribute = "results"
+    paginator_class = NextWithUrlPaginator
 
 
 class ChoiceManager(Manager):
     resource_class = Choice
     json_collection_attribute = "results"
+    paginator_class = NextWithUrlPaginator
