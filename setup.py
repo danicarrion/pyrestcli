@@ -8,5 +8,5 @@ setup(name="pyrestcli",
       version="0.0.1",
       license="MIT",
       url="https://github.com/danicarrion/pyrestcli",
-      install_requires=['requests==2.11.1', 'python-dateutil==2.5.3'],
+      install_requires=['requests>=2.10.0', 'python-dateutil==2.5.3'],
       packages=["pyrestcli"])
