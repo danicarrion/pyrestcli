@@ -1,13 +1,15 @@
 import warnings
 import requests
 from gettext import gettext as _
-from urllib.parse import urljoin
-
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    from urlparse import urljoin
 
 from .exceptions import BadRequestException, NotFoundException, ServerErrorException, AuthErrorException
 
 
-class BaseAuthClient:
+class BaseAuthClient(object):
     """ Basic client to access (non)authorized REST APIs """
     def __init__(self, base_url, proxies=None):
         """
@@ -80,12 +82,18 @@ class TokenAuthClient(BaseAuthClient):
     This class provides you with authenticated access to APIs using a token-based HTTP Authentication scheme
     The token will be included in the Authorization HTTP header, prefixed by a keyword (default: "Token"), with whitespace separating the two strings
     """
-    def __init__(self, token, *args, header_keyword="Token", **kwargs):
+    def __init__(self, token, *args, **kwargs):
         """
         :param Token: Authentication token
-        :param header_keywork: Authorization HTTP header prefix
+        :param header_keyword: Authorization HTTP header prefix
         :return:
         """
+        if 'header_keyword' in kwargs:
+            header_keyword = kwargs['header_keyword']
+            del kwargs['header_keyword']
+        else:
+            header_keyword = "Token"
+
         if not self.base_url.startswith('https'):
             warnings.warn(_("You are using unencrypted token authentication!!!"))
 

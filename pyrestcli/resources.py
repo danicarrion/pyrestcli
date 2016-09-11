@@ -1,12 +1,17 @@
 import requests
+from six import with_metaclass, iteritems
+from future.utils import python_2_unicode_compatible
 from datetime import datetime
-from urllib.parse import urljoin
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    from urlparse import urljoin
 
 from .fields import Field
 from .paginators import DummyPaginator
 
 
-class APIConnected:
+class APIConnected(object):
     """
     This class handle API endpoints and interfaces with the authorization client for actually sending requests
     """
@@ -76,18 +81,19 @@ class ResourceMetaclass(type):
 
         for klass in bases:
             if hasattr(klass, "Meta"):
-                for attribute_name, attribute in klass.Meta.__dict__.items():
+                for attribute_name, attribute in iteritems(klass.Meta.__dict__):
                     if not (attribute_name.startswith("__") or hasattr(cls.Meta, attribute_name)):
                         setattr(cls.Meta, attribute_name, attribute)
 
         cls.fields = []
-        for attribute_name, attribute in cls.__dict__.items():
+        for attribute_name, attribute in iteritems(cls.__dict__):
             if isinstance(attribute, Field):
                 attribute.name = attribute_name
                 cls.fields.append(attribute_name)
 
 
-class Resource(APIConnected, metaclass=ResourceMetaclass):
+@python_2_unicode_compatible
+class Resource(with_metaclass(ResourceMetaclass, APIConnected)):
     """
     Resource on the REST API
 
@@ -109,7 +115,7 @@ class Resource(APIConnected, metaclass=ResourceMetaclass):
         Give a nice representation for the resource
         :param return: Resource friendly representation based on the self.Meta.name_field attribute
         """
-        return getattr(self, self.Meta.name_field, super(Resource, self).__str__()).encode("utf-8")
+        return getattr(self, self.Meta.name_field, super(Resource, self).__str__())
 
     def get_resource_endpoint(self):
         """
@@ -124,7 +130,7 @@ class Resource(APIConnected, metaclass=ResourceMetaclass):
         :param attribute_dict: Dictionary to be mapped into object attributes
         :return:
         """
-        for field_name, field_value in attribute_dict.items():
+        for field_name, field_value in iteritems(attribute_dict):
             if self.fields is None or field_name in self.fields:
                 setattr(self, field_name, field_value)
 
