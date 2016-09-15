@@ -166,7 +166,7 @@ class Resource(with_metaclass(ResourceMetaclass, APIConnected)):
 
             # When creating or updating, only references to other resources are sent, instead of the whole resource
             if isinstance(value, Resource):
-                value = getattr(value, value.get_id())
+                value = value.get_id()
 
             # Lists of resources are not sent when creating or updating a resource
             if isinstance(value, list):
