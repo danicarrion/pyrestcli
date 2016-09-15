@@ -117,12 +117,15 @@ class Resource(with_metaclass(ResourceMetaclass, APIConnected)):
         """
         return getattr(self, self.Meta.name_field, super(Resource, self).__str__())
 
+    def get_id(self):
+        return getattr(self, self.Meta.id_field, None)
+
     def get_resource_endpoint(self):
         """
         Get the relative path to the specific API resource
         :return: Relative path to the resource
         """
-        return super(Resource, self).get_resource_endpoint(getattr(self, self.Meta.id_field))
+        return super(Resource, self).get_resource_endpoint(self.get_id())
 
     def update_from_dict(self, attribute_dict):
         """
@@ -163,7 +166,7 @@ class Resource(with_metaclass(ResourceMetaclass, APIConnected)):
 
             # When creating or updating, only references to other resources are sent, instead of the whole resource
             if isinstance(value, Resource):
-                value = getattr(value, value.Meta.id_field)
+                value = getattr(value, value.get_id())
 
             # Lists of resources are not sent when creating or updating a resource
             if isinstance(value, list):

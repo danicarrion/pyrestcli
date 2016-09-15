@@ -1,6 +1,7 @@
 class Paginator(object):
-    def __init__(self, base_url):
+    def __init__(self, base_url, params=None):
         self.base_url = base_url
+        self.params = params or {}
 
     def get_urls(self, initial_url):
         raise NotImplemented
