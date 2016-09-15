@@ -151,9 +151,10 @@ class Resource(with_metaclass(ResourceMetaclass, APIConnected)):
             except ValueError:
                 pass
 
-    def save(self):
+    def save(self, force_create=False):
         """
         Saves (creates or updates) resource on the server
+        :param force_create: If True, forces resource creation even if it already has an Id.
         :return:
         """
         values = {}
@@ -180,7 +181,7 @@ class Resource(with_metaclass(ResourceMetaclass, APIConnected)):
         json = values if self.Meta.json_data is True else None
         data = values if self.Meta.json_data is False else None
 
-        if self.get_resource_endpoint() is not None:
+        if self.get_resource_endpoint() is not None and force_create is False:
             self.send(self.get_resource_endpoint(), "put", headers=http_headers, json=json, data=data)
         else:
             self.send(self.get_collection_endpoint(), "post", headers=http_headers, json=json, data=data)
@@ -286,6 +287,6 @@ class Manager(APIConnected):
         """
         resource = self.resource_class(self.client)
         resource.update_from_dict(kwargs)
-        resource.save()
+        resource.save(force_create=True)
 
         return resource
