@@ -1,5 +1,4 @@
 from dateutil.parser import parse
-from datetime import datetime
 
 
 class Field(object):
@@ -73,12 +72,12 @@ class DateTimeField(Field):
         :param value: Might be a datetime object or a string to be parsed
         """
         if self.many is False:
-            if not isinstance(value, datetime):
+            if isinstance(value, str):
                 value = parse(value)
         else:
             datetime_list = []
             for datetime_value in value:
-                if not isinstance(datetime_value, datetime):
+                if isinstance(datetime_value, str):
                     datetime_value = parse(datetime_value)
                 datetime_list.append(datetime_value)
             value = datetime_list
