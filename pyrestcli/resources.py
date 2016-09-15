@@ -168,10 +168,16 @@ class Resource(with_metaclass(ResourceMetaclass, APIConnected)):
             if isinstance(value, Resource):
                 value = value.get_id()
 
-            # Lists of resources are not sent when creating or updating a resource
             if isinstance(value, list):
+                # Lists of resources are not sent when creating or updating a resource
                 if len(value) > 0 and isinstance(value[0], Resource):
                     value = None
+                else:
+                    # We need to check for datetimes in the list
+                    final_value_list = []
+                    for item in value:
+                        final_value_list.append(item.isoformat() if isinstance(item, datetime) else item)
+                    value = final_value_list
 
             if isinstance(value, datetime):
                 # TODO: Allow for different formats
