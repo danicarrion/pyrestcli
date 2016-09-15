@@ -14,7 +14,7 @@ class DummyPaginator(Paginator):
     def get_urls(self, initial_url):
         url = initial_url
         while url is not None:
-            yield url
+            yield url, self.params
             url = None
 
     def process_response(self, response):
@@ -25,7 +25,7 @@ class NextWithUrlPaginator(Paginator):
     def get_urls(self, initial_url):
         self.url = initial_url
         while self.url is not None:
-            yield self.url
+            yield self.url, self.params
 
     def process_response(self, response):
         response_json = response.json()

@@ -257,9 +257,11 @@ class Manager(APIConnected):
         :param search_args: To be translated into ?arg1=value1&arg2=value2...
         :return: A list of resources
         """
+        search_args = search_args or {}
         raw_resources = []
 
-        for url in self.paginator.get_urls(self.get_collection_endpoint()):
+        for url, paginator_params in self.paginator.get_urls(self.get_collection_endpoint()):
+            search_args.update(paginator_params)
             response = self.paginator.process_response(self.send(url, "get", params=search_args))
             raw_resources += self.client.get_response_data(response, self.Meta.parse_json)[self.json_collection_attribute] if self.json_collection_attribute is not None else self.client.get_response_data(response, self.Meta.parse_json)
 
