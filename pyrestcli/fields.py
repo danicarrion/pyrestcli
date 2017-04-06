@@ -54,6 +54,13 @@ class IntegerField(Field):
     pass
 
 
+class FloatField(Field):
+    """
+    Convenient class to make explicit that an attribute will store floats
+    """
+    pass
+
+
 class CharField(Field):
     """
     Convenient class to make explicit that an attribute will store chars
@@ -83,6 +90,13 @@ class DateTimeField(Field):
             value = datetime_list
 
         super(DateTimeField, self).__set__(instance, value)
+
+
+class DictField(Field):
+    """
+    Convenient class to make explicit that an attribute will store a dictionary
+    """
+    pass
 
 
 class ResourceField(Field):
