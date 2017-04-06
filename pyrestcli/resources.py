@@ -110,6 +110,18 @@ class Resource(with_metaclass(ResourceMetaclass, APIConnected)):
         name_field = "id"
         json_data = True
 
+    def __init__(self, auth_client, **kwargs):
+        """
+        Initializes the resource
+        :param auth_client: Client to make (non)authorized requests
+        :param kwargs: Initial value for attributes
+        :return:
+        """
+        for name, value in iteritems(kwargs):
+            setattr(self, name, value)
+
+        super(Resource, self).__init__(auth_client)
+
     def __str__(self):
         """
         Give a nice representation for the resource
@@ -154,14 +166,17 @@ class Resource(with_metaclass(ResourceMetaclass, APIConnected)):
             except ValueError:
                 pass
 
-    def save(self, force_create=False):
+    def save(self, force_create=False, fields=None):
         """
         Saves (creates or updates) resource on the server
         :param force_create: If True, forces resource creation even if it already has an Id.
+        :param fields: List of fields to be saved. If None, all fields will be saved.
         :return:
         """
         values = {}
-        for field_name in self.fields:
+        fields = fields or self.fields
+
+        for field_name in fields:
             value = getattr(self, field_name)
 
             # When creating or updating, only references to other resources are sent, instead of the whole resource
