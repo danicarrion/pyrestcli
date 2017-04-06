@@ -11,15 +11,17 @@ from .exceptions import BadRequestException, NotFoundException, ServerErrorExcep
 
 class BaseAuthClient(object):
     """ Basic client to access (non)authorized REST APIs """
-    def __init__(self, base_url, proxies=None):
+    def __init__(self, base_url, session=None):
         """
         :param base_url: Base URL. API endpoint paths will always be relative to this URL
-        :param proxies: requests' proxy dict
+        :param session: requests' session
         :return:
         """
         self.base_url = base_url
-        self.proxies = proxies
-        self.session = requests.Session()
+        if session is None:
+            self.session = requests.Session()
+        else:
+            self.session = session
 
     def send(self, relative_path, http_method, **requests_args):
         """
@@ -31,7 +33,7 @@ class BaseAuthClient(object):
         """
         url = urljoin(self.base_url, relative_path)
 
-        return self.session.request(http_method, url, proxies=self.proxies, **requests_args)
+        return self.session.request(http_method, url, **requests_args)
 
     def get_response_data(self, response, parse_json=True):
         """

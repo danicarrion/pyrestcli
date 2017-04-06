@@ -166,6 +166,8 @@ class Resource(with_metaclass(ResourceMetaclass, APIConnected)):
             except ValueError:
                 pass
 
+        return response.status_code if response is not None else None
+
     def save(self, force_create=False, fields=None):
         """
         Saves (creates or updates) resource on the server
@@ -224,7 +226,7 @@ class Resource(with_metaclass(ResourceMetaclass, APIConnected)):
         :return:
         """
         if self.get_resource_endpoint() is not None:
-            self.send(self.get_resource_endpoint(), http_method="delete")
+            return self.send(self.get_resource_endpoint(), http_method="delete")
 
 
 class Manager(APIConnected):
