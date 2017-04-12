@@ -33,6 +33,8 @@ class BaseAuthClient(object):
         """
         url = urljoin(self.base_url, relative_path)
 
+        requests_args = self.__process(**requests_args)
+
         return self.session.request(http_method, url, **requests_args)
 
     def get_response_data(self, response, parse_json=True):
@@ -58,6 +60,21 @@ class BaseAuthClient(object):
             raise AuthErrorException(_("Access denied"))
         else:
             raise ServerErrorException(_("Unknown error occurred"))
+
+    def __process(self, **requests_args):
+        if requests_args is None:
+            return None
+            
+        for arg in requests_args:
+            val = requests_args[arg]
+            if val is None:
+                continue
+            if isinstance(val, dict):
+                requests_args[arg] = self.__process(**val)
+            if val is not None and type(val) is bool:
+                requests_args[arg] = str(val).lower()
+
+        return requests_args
 
 
 class NoAuthClient(BaseAuthClient):
