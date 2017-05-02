@@ -166,7 +166,7 @@ class Resource(with_metaclass(ResourceMetaclass, APIConnected)):
             except ValueError:
                 pass
 
-        return response.status_code if response is not None else None
+        return response if response is not None else None
 
     def save(self, force_create=False, fields=None):
         """
@@ -208,9 +208,9 @@ class Resource(with_metaclass(ResourceMetaclass, APIConnected)):
         data = values if self.Meta.json_data is False else None
 
         if self.get_resource_endpoint() is not None and force_create is False:
-            self.send(self.get_resource_endpoint(), "put", headers=http_headers, json=json, data=data)
+            return self.send(self.get_resource_endpoint(), "put", headers=http_headers, json=json, data=data)
         else:
-            self.send(self.get_collection_endpoint(), "post", headers=http_headers, json=json, data=data)
+            return self.send(self.get_collection_endpoint(), "post", headers=http_headers, json=json, data=data)
 
     def refresh(self):
         """
@@ -218,7 +218,7 @@ class Resource(with_metaclass(ResourceMetaclass, APIConnected)):
         :return:
         """
         if self.get_resource_endpoint() is not None:
-            self.send(self.get_resource_endpoint(), "get")
+            return self.send(self.get_resource_endpoint(), "get")
 
     def delete(self):
         """
