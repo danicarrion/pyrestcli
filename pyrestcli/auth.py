@@ -6,7 +6,7 @@ try:
 except ImportError:
     from urlparse import urljoin
 
-from .exceptions import BadRequestException, NotFoundException, ServerErrorException, AuthErrorException
+from .exceptions import BadRequestException, NotFoundException, ServerErrorException, AuthErrorException, RateLimitException
 
 
 class BaseAuthClient(object):
