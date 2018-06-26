@@ -12,3 +12,8 @@ class ServerErrorException(Exception):
 
 class AuthErrorException(Exception):
     pass
+
+
+class RateLimitException(Exception):
+    """429 Too Many Requests Error"""
+    pass

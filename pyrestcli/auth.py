@@ -6,7 +6,7 @@ try:
 except ImportError:
     from urlparse import urljoin
 
-from .exceptions import BadRequestException, NotFoundException, ServerErrorException, AuthErrorException
+from .exceptions import BadRequestException, NotFoundException, ServerErrorException, AuthErrorException, RateLimitException
 
 
 class BaseAuthClient(object):
@@ -56,6 +56,8 @@ class BaseAuthClient(object):
             raise ServerErrorException(_("Internal server error"))
         elif response.status_code in (requests.codes.unauthorized, requests.codes.forbidden):
             raise AuthErrorException(_("Access denied"))
+        elif response.status_code == requests.codes.too_many_requests:
+            raise RateLimitException(_("Rate limit exceeded"))
         else:
             raise ServerErrorException(_("Unknown error occurred"))
 
