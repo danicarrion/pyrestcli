@@ -57,7 +57,7 @@ class BaseAuthClient(object):
         elif response.status_code in (requests.codes.unauthorized, requests.codes.forbidden):
             raise AuthErrorException(_("Access denied"))
         elif response.status_code == requests.codes.too_many_requests:
-            raise RateLimitException(_("Rate limit exceeded"))
+            raise RateLimitException(_(response.text))
         else:
             raise ServerErrorException(_("Unknown error occurred"))
 
