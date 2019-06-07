@@ -158,13 +158,13 @@ class Resource(with_metaclass(ResourceMetaclass, APIConnected)):
         :return:
         """
         response = super(Resource, self).send(url, http_method, **client_args)
+        response_data = self.client.get_response_data(response, self.Meta.parse_json)
 
         # Update Python object if we get back a full object from the API
-        if response.status_code in (requests.codes.ok, requests.codes.created):
-            try:
-                self.update_from_dict(self.client.get_response_data(response, self.Meta.parse_json))
-            except ValueError:
-                pass
+        try:
+            self.update_from_dict(response_data)
+        except ValueError:
+            pass
 
         return response if response is not None else None
 

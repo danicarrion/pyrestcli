@@ -6,7 +6,7 @@ try:
 except ImportError:
     from urlparse import urljoin
 
-from .exceptions import BadRequestException, NotFoundException, ServerErrorException, AuthErrorException, RateLimitException
+from .exceptions import BaseException
 
 
 class BaseAuthClient(object):
@@ -46,20 +46,8 @@ class BaseAuthClient(object):
             if parse_json:
                 return response.json()
             return response.content
-        elif response.status_code == requests.codes.bad_request:
-            response_json = response.json()
-            raise BadRequestException(response_json.get("error", False) or response_json.get("errors",
-                                                                                             _("Bad Request: {text}").format(text=response.text)))
-        elif response.status_code == requests.codes.not_found:
-            raise NotFoundException(_("Resource not found: {url}").format(url=response.url))
-        elif response.status_code == requests.codes.internal_server_error:
-            raise ServerErrorException(_("Internal server error"))
-        elif response.status_code in (requests.codes.unauthorized, requests.codes.forbidden):
-            raise AuthErrorException(_("Access denied"))
-        elif response.status_code == requests.codes.too_many_requests:
-            raise RateLimitException(_(response.text))
         else:
-            raise ServerErrorException(_("Unknown error occurred"))
+            raise BaseException.create(response)
 
 
 class NoAuthClient(BaseAuthClient):
