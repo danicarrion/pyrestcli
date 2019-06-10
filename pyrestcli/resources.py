@@ -162,7 +162,8 @@ class Resource(with_metaclass(ResourceMetaclass, APIConnected)):
 
         # Update Python object if we get back a full object from the API
         try:
-            self.update_from_dict(response_data)
+            if response_data:
+                self.update_from_dict(response_data)
         except ValueError:
             pass
 
@@ -271,7 +272,9 @@ class Manager(APIConnected):
         except (ValueError, TypeError):
             return None
         else:
-            resource.update_from_dict(self.client.get_response_data(response, self.Meta.parse_json))
+            response_data = self.client.get_response_data(response, self.Meta.parse_json)
+            if response_data:
+                resource.update_from_dict(response_data)
             return resource
 
     def filter(self, **search_args):

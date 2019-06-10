@@ -1,3 +1,4 @@
+import json
 import sys
 
 ERRORS = {
@@ -21,7 +22,11 @@ class BaseException(Exception):
 
     @staticmethod
     def create(response):
-        response_json = response.json()
+        response_json = {}
+        try:
+            response_json = response.json()
+        except json.decoder.JSONDecodeError:
+            pass
         message = response_json.get("error", response_json.get("errors", response.text))
         headers = response.headers
         status_code = response.status_code
@@ -38,11 +43,13 @@ class BadRequestException(BaseException):
 
 
 class UnauthorizedErrorException(BaseException):
-    pass
+    def __init__(self, message, status_code=None, headers=None, reason=None, url=None):
+        super(BaseException, self).__init__('Access denied')
 
 
 class ForbiddenErrorException(BaseException):
-    pass
+    def __init__(self, message, status_code=None, headers=None, reason=None, url=None):
+        super(BaseException, self).__init__('Access denied')
 
 
 class NotFoundException(BaseException):
