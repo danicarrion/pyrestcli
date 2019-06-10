@@ -42,10 +42,11 @@ class BaseAuthClient(object):
         :param parse_json: if True, response will be parsed as JSON
         :return: response data, either as json or as a regular response.content object
         """
-        if response.status_code in (requests.codes.ok, requests.codes.created):
-            if parse_json:
-                return response.json()
-            return response.content
+        if response.status_code < 400:
+            if response.status_code != requests.codes.no_content:
+                if parse_json:
+                    return response.json()
+                return response.content
         else:
             raise BaseException.create(response)
 
