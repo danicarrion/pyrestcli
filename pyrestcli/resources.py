@@ -9,6 +9,7 @@ except ImportError:
 
 from .fields import Field
 from .paginators import DummyPaginator
+from .exceptions import NotFoundException
 
 
 class APIConnected(object):
@@ -273,9 +274,20 @@ class Manager(APIConnected):
             return None
         else:
             response_data = self.client.get_response_data(response, self.Meta.parse_json)
-            if response_data:
-                resource.update_from_dict(response_data)
-            return resource
+        if response_data:
+            resource.update_from_dict(response_data)
+        return resource
+
+    def get_or_none(self, resource_id):
+        """
+        Get one single resource from the API, return None if not found, except of raising an exception
+        :param resource_id: Id of the resource to be retrieved
+        :return: Retrieved resource
+        """
+        try:
+            return self.get(resource_id)
+        except NotFoundException:
+            return None
 
     def filter(self, **search_args):
         """
