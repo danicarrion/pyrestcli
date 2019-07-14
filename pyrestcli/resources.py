@@ -52,7 +52,13 @@ class APIConnected(object):
         :param cls: Resource class
         :return: Relative path to the resource collection
         """
-        return cls.Meta.collection_endpoint if cls.Meta.collection_endpoint is not None else cls.__name__.lower() + "s/"
+        if cls.Meta.collection_endpoint is not None:
+            if cls.Meta.collection_endpoint.endswith("/"):
+                return cls.Meta.collection_endpoint
+            else:
+                return cls.Meta.collection_endpoint + "/"
+        else:
+            return cls.__name__.lower() + "s/"
 
     def send(self, url, http_method, **client_args):
         """
