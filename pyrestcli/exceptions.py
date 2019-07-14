@@ -25,6 +25,8 @@ class BaseException(Exception):
         response_json = {}
         try:
             response_json = response.json()
+        except ValueError:
+            pass
         except json.decoder.JSONDecodeError:
             pass
         message = response_json.get("error", response_json.get("errors", response.text))
