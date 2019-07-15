@@ -41,7 +41,7 @@ class APIConnected(object):
         :param resource_id: Resource id
         :return: Relative path to the resource
         """
-        return urljoin(cls.get_collection_endpoint(), str(resource_id)) if resource_id is not None else None
+        return urljoin(cls.get_collection_endpoint(), str(resource_id) + "/") if resource_id is not None else None
 
     @classmethod
     def get_collection_endpoint(cls):
