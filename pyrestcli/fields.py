@@ -106,6 +106,15 @@ class ResourceField(Field):
     value_class = "pyrestcli.resources.Resource"  # Subclasses should update this according to the resource type they are pointing at
     _initialized = False
 
+    def __init__(self, many=False, expand=False):
+        """
+        Initialize the field
+        :param many: Set to True if this field will host a list of items
+        :param expand: If True, serializing the object means adding a dictionary with the id key and value, instead of simply the value
+        """
+        self.expand = expand
+        super(ResourceField, self).__init__(many)
+
     def set_real_value_class(self):
         """
         value_class is initially a string with the import path to the resource class, but we need to get the actual class before doing any work
@@ -128,6 +137,7 @@ class ResourceField(Field):
                 resource.update_from_dict(value)
             else:
                 resource.update_from_dict({resource.Meta.id_field: value})
+            resource._expand = self.expand
             value = resource
         else:
             resource_list = []
@@ -137,6 +147,7 @@ class ResourceField(Field):
                     resource.update_from_dict(resource_value)
                 else:
                     resource.update_from_dict({resource.Meta.id_field: resource_value})
+                resource._expand = self.expand
                 resource_list.append(resource)
             value = resource_list
 
